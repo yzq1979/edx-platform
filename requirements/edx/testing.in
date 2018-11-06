@@ -24,7 +24,7 @@ edx-i18n-tools>=0.4.6     # Commands for developers and translators to extract, 
 #edx-lint                  # pylint extensions for Open edX repositories
 #-e git+https://github.com/edx/edx-lint.git@nedbat/pylint-19#egg=edx_lint==0.0
 # edx-lint has a -e for pylint-django, but it doesn't get pulled in?
-#-e git+https://github.com/nedbat/pylint-django.git@nedbat/scopeconsumer#egg=pylint-django==0.0
+-e git+https://github.com/PyCQA/pylint-django@backport_120_to_0.8#egg=pylint-django==0.0
 #pylint-plugin-utils==0.3  # required by edx-lint and pinned explicitly here because newer versions don't guarantee python 2 support.
                           # can be removed when we get to python 3
 # Without edx-lint, we need to install pylint ourselves
