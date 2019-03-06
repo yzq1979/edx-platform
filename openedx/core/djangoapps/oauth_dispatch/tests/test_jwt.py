@@ -96,3 +96,4 @@ class TestCreateJWTs(AccessTokenMixin, TestCase):
         )
         self.assertDictContainsSubset(additional_claims, token_payload)
         self.assertEqual(user_email_verified, token_payload['email_verified'])
+        self.assertEqual([], token_payload['roles'])

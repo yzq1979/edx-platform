@@ -6,6 +6,8 @@ from django.conf import settings
 from jwkest import jwk
 from jwkest.jws import JWS
 
+from edx_rbac.utils import create_role_auth_claim_for_user
+
 from edx_django_utils.monitoring import set_custom_metric
 from openedx.core.djangoapps.oauth_dispatch.toggles import ENFORCE_JWT_SCOPES
 from student.models import UserProfile, anonymous_id_for_user
@@ -116,6 +118,7 @@ def _create_jwt(
         'filters': filters or [],
         'is_restricted': is_restricted,
         'email_verified': user.is_active,
+        'roles': create_role_auth_claim_for_user(user),
     }
     payload.update(additional_claims or {})
     _update_from_additional_handlers(payload, user, scopes)
