@@ -123,6 +123,7 @@ class ProgramListingPageA11yTest(ProgramPageBase):
         self.listing_page.a11y_audit.config.set_rules({
             "ignore": [
                 'aria-valid-attr',  # TODO: LEARNER-6611 & LEARNER-6865
+                'region',
             ]
         })
         self.auth(enroll=False)
