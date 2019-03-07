@@ -1,4 +1,4 @@
-"""AWS environment variables unique to the instructor plugin."""
+"""Production environment variables unique to the instructor plugin."""
 import warnings
 
 

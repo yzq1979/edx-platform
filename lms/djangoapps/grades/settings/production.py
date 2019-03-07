@@ -1,4 +1,9 @@
+"""Production settings unique to the grades plugin."""
+
+
 def plugin_settings(settings):
+    """Settings for the grades plugin."""
+
     # Queue to use for updating persistent grades
     settings.RECALCULATE_GRADES_ROUTING_KEY = settings.ENV_TOKENS.get(
         'RECALCULATE_GRADES_ROUTING_KEY', settings.DEFAULT_PRIORITY_QUEUE,

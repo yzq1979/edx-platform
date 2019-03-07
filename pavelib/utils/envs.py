@@ -248,7 +248,7 @@ class Env(object):
         :return: unicode value of the django setting
         """
         if not settings:
-            settings = os.environ.get("EDX_PLATFORM_SETTINGS", "aws")
+            settings = os.environ.get("EDX_PLATFORM_SETTINGS", "production")
         log_dir = os.path.dirname(cls.PRINT_SETTINGS_LOG_FILE)
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)

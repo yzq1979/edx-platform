@@ -1,4 +1,9 @@
+"""Production settings unique to the ace common plugin."""
+
+
 def plugin_settings(settings):
+    """Settings for the ace common plugin."""
+    
     settings.ACE_ENABLED_CHANNELS = settings.ENV_TOKENS.get('ACE_ENABLED_CHANNELS', settings.ACE_ENABLED_CHANNELS)
     settings.ACE_ENABLED_POLICIES = settings.ENV_TOKENS.get('ACE_ENABLED_POLICIES', settings.ACE_ENABLED_POLICIES)
     settings.ACE_CHANNEL_SAILTHRU_DEBUG = settings.ENV_TOKENS.get(
