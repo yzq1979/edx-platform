@@ -3,6 +3,7 @@ django-rules for courseware related features
 """
 from __future__ import absolute_import
 
+from course_modes.models import CourseMode
 from opaque_keys.edx.keys import CourseKey
 from student.models import CourseEnrollment
 
@@ -16,7 +17,7 @@ def is_verified_or_masters_track_exam(user, exam):
     """
     course_id = CourseKey.from_string(exam['course_id'])
     mode, is_active = CourseEnrollment.enrollment_mode_for_user(user, course_id)
-    return is_active and mode in ('verified', 'masters')
+    return is_active and mode in (CourseMode.VERIFIED, CourseMode.MASTERS, CourseMode.PROFESSIONAL)
 
 
 # The edx_proctoring.api uses this permission to gate access to the
