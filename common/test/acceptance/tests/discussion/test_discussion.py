@@ -554,6 +554,7 @@ class DiscussionOpenClosedThreadTest(BaseDiscussionTestCase):
                 'aria-required-children',  # TODO: AC-534
                 'color-contrast',  # Commented out for now because they reproducibly fail on Jenkins but not locally
                 'aria-valid-attr',  # TODO: LEARNER-6611 & LEARNER-6865
+                'region',
             ]
         })
         page.a11y_audit.check_for_accessibility_errors()
