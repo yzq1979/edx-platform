@@ -718,6 +718,7 @@ class LearnerProfileA11yTest(LearnerProfileTestMixin, AcceptanceTest):
             "ignore": [
                 'aria-valid-attr',  # TODO: LEARNER-6611 & LEARNER-6865
                 'region',
+                'color-contrast'
             ]
         })
         profile_page.display_accomplishments()

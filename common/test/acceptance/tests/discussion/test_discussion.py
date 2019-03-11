@@ -478,6 +478,7 @@ class DiscussionTabMultipleThreadTest(BaseDiscussionTestCase, BaseDiscussionMixi
             "ignore": [
                 'section',  # TODO: AC-491
                 'aria-required-children',  # TODO: AC-534
+                'region'
             ]
         })
 

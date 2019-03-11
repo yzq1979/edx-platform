@@ -171,9 +171,16 @@ class ProblemTypeA11yTestMixin(object):
             "Make sure the correct problem is on the page"
         )
 
+        self.problem_page.a11y_audit.config.set_rules({
+            "ignore": [
+                'label-title-only',
+            ]
+        })
+
         # Set the scope to the problem container
         self.problem_page.a11y_audit.config.set_scope(
-            include=['div#seq_content'])
+            include=['div#seq_content']
+        )
 
         # Run the accessibility audit.
         self.problem_page.a11y_audit.check_for_accessibility_errors()

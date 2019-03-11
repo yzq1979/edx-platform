@@ -411,7 +411,7 @@ class LmsDashboardA11yTest(BaseLmsDashboardTestMultiple):
         self.dashboard_page.a11y_audit.config.set_rules({
             "ignore": [
                 'aria-valid-attr',  # TODO: LEARNER-6611 & LEARNER-6865
-                'button',
+                'button-name',
                 'landmark-no-duplicate-banner',
                 'region'
             ]
