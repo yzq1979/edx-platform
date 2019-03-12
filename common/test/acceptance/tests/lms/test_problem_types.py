@@ -171,12 +171,6 @@ class ProblemTypeA11yTestMixin(object):
             "Make sure the correct problem is on the page"
         )
 
-        self.problem_page.a11y_audit.config.set_rules({
-            "ignore": [
-                'label-title-only',
-            ]
-        })
-
         # Set the scope to the problem container
         self.problem_page.a11y_audit.config.set_scope(
             include=['div#seq_content']
@@ -620,11 +614,10 @@ class AnnotationProblemTypeBase(ProblemTypeTestBase):
         """
         Additional setup for AnnotationProblemTypeBase
         """
-        super(AnnotationProblemTypeBase, self).setUp(*args, **kwargs)
-
         self.problem_page.a11y_audit.config.set_rules({
             "ignore": [
                 'label',  # TODO: AC-491
+                'label-title-only',
             ]
         })
 
