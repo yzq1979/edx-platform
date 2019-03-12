@@ -614,6 +614,8 @@ class AnnotationProblemTypeBase(ProblemTypeTestBase):
         """
         Additional setup for AnnotationProblemTypeBase
         """
+        super(AnnotationProblemTypeBase, self).setUp(*args, **kwargs)
+
         self.problem_page.a11y_audit.config.set_rules({
             "ignore": [
                 'label',  # TODO: AC-491
