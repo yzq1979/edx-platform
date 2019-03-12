@@ -5,9 +5,11 @@ Utilities to facilitate experimentation
 import hashlib
 import re
 import logging
+from decimal import Decimal
 from student.models import CourseEnrollment
 from django_comment_common.models import Role
-from course_modes.models import get_cosmetic_verified_display_price
+from django.utils.timezone import now
+from course_modes.models import get_cosmetic_verified_display_price, format_course_price
 from courseware.access import has_staff_access_to_preview_mode
 from courseware.date_summary import verified_upgrade_deadline_link, verified_upgrade_link_is_valid
 from xmodule.partitions.partitions_service import get_user_partition_groups, get_all_partitions_for_course
@@ -35,6 +37,24 @@ logger = logging.getLogger(__name__)
 PROGRAM_INFO_FLAG = WaffleFlag(
     waffle_namespace=WaffleFlagNamespace(name=u'experiments'),
     flag_name=u'add_programs',
+    flag_undefined_default=False
+)
+
+# .. feature_toggle_name: experiments.add_program_price
+# .. feature_toggle_type: flag
+# .. feature_toggle_default: False
+# .. feature_toggle_description: Toggle for adding the current course's program price and sku information to user
+#                                metadata
+# .. feature_toggle_category: experiments
+# .. feature_toggle_use_cases: monitored_rollout
+# .. feature_toggle_creation_date: 2019-3-12
+# .. feature_toggle_expiration_date: None
+# .. feature_toggle_warnings: None
+# .. feature_toggle_tickets: REVEM-118, REVEM-206
+# .. feature_toggle_status: supported
+PROGRAM_PRICE_FLAG = WaffleFlag(
+    waffle_namespace=WaffleFlagNamespace(name=u'experiments'),
+    flag_name=u'add_program_price',
     flag_undefined_default=False
 )
 # TODO: clean up as part of REVEM-199 (END)
@@ -78,6 +98,80 @@ def check_and_get_upgrade_link_and_date(user, enrollment=None, course=None):
 
 
 # TODO: clean up as part of REVEM-199 (START)
+def get_program_purchase_url(skus):
+    """
+    Return a url that will allow the purchase of the courses with these skus
+    """
+    if not skus:
+        return None
+
+    url = 'https://ecommerce.edx.org/basket/add/?'
+    for sku in skus:
+        url += 'sku=' + sku + '&'
+
+    # Remove trailing &
+    return url[:-1]
+
+
+def get_program_price_and_skus(courses):
+    """
+    Get the total program price and purchase skus from these courses in the program
+    """
+    program_price = Decimal('0')
+    skus = []
+
+    for course in courses:
+        course_price, course_sku = get_course_price_and_sku(course)
+        if course_price is not None and course_sku is not None:
+            program_price = Decimal(program_price) + Decimal(course_price)
+            skus.append(course_sku)
+
+    if program_price <= Decimal('0'):
+        program_price = None
+        skus = None
+    else:
+        program_price = unicode(format_course_price(program_price))
+
+    return program_price, skus
+
+
+def get_course_price_and_sku(course):
+    """
+    Get the price and sku from this course.
+    Try to get them from the first non-expired, verified entitlement that has a price and a sku. If that doesn't work,
+    fall back to the first non-expired, verified course run that has a price and a sku.
+    """
+    for entitlement in course.get('entitlements', []):
+        if entitlement.get('mode') == 'verified' and entitlement['price'] and entitlement['sku']:
+            expires = entitlement.get('expires')
+            if not expires or expires > now():
+                return entitlement['price'], entitlement['sku']
+
+    course_runs = course.get('course_runs', [])
+    published_course_runs = [run for run in course_runs if run['status'] == 'published']
+    for published_course_run in published_course_runs:
+        for seat in published_course_run['seats']:
+            if seat.get('type') == 'verified' and seat['price'] and seat['sku']:
+                price = Decimal(seat.get('price'))
+                return price, seat.get('sku')
+
+    return None, None
+
+
+def get_unenrolled_courses_in_program(courses_in_program, user_enrollments):
+    """
+    Get courses in this program in which the user is not enrolled
+    """
+    # Get the enrollment course ids here, so we don't need to loop through them for every course run
+    enrollment_course_ids = {enrollment.course_id for enrollment in user_enrollments}
+    unenrolled_courses = []
+
+    for course in courses_in_program:
+        if not is_enrolled_in_course(course, enrollment_course_ids):
+            unenrolled_courses.append(course)
+    return unenrolled_courses
+
+
 def is_enrolled_in_all_courses_in_program(courses_in_program, user_enrollments):
     """
     Determine if the user is enrolled in all courses in this program
@@ -150,9 +244,17 @@ def get_experiment_user_metadata_context(course, user):
                 complete_enrollment = False
                 total_courses = None
                 courses = program.get('courses')
+                remaining_courses_price = None
+                remaining_courses_purchase_url = None
                 if courses is not None:
                     total_courses = len(courses)
                     complete_enrollment = is_enrolled_in_all_courses_in_program(courses, user_enrollments)
+
+                    if PROGRAM_PRICE_FLAG.is_enabled():
+                        unenrolled_courses = get_unenrolled_courses_in_program(courses, user_enrollments)
+                        complete_enrollment = (len(unenrolled_courses) == 0)
+                        remaining_courses_price, remaining_skus = get_program_price_and_skus(unenrolled_courses)
+                        remaining_courses_purchase_url = get_program_purchase_url(remaining_skus)
 
                 program_key = {
                     'uuid': program.get('uuid'),
@@ -160,6 +262,8 @@ def get_experiment_user_metadata_context(course, user):
                     'marketing_url': program.get('marketing_url'),
                     'total_courses': total_courses,
                     'complete_enrollment': complete_enrollment,
+                    'remaining_courses_price': remaining_courses_price,
+                    'remaining_courses_purchase_url': remaining_courses_purchase_url,
                 }
         # TODO: clean up as part of REVEM-199 (END)
         enrollment = CourseEnrollment.objects.select_related(
