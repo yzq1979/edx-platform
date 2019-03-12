@@ -235,9 +235,9 @@ class AutoEnrollmentWithCSVTest(BaseInstructorDashboardTest):
         """
         Auto-enrollment with CSV accessibility tests
         """
-        self.auto_enroll_section.a11y_audit.config.set_scope([
-            '#member-list-widget-template'
-        ])
+        # self.auto_enroll_section.a11y_audit.config.set_scope([
+        #     '#member-list-widget-template'
+        # ])
         self.auto_enroll_section.a11y_audit.check_for_accessibility_errors()
 
 
