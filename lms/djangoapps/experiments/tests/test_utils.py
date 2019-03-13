@@ -14,6 +14,8 @@ class ExperimentUtilsTests(TestCase):
     """
 
     def setUp(self):
+        super(ExperimentUtilsTests, self).setUp()
+
         # Create a course run
         self.run_a_price = '86.00'
         self.run_a_sku = 'B9B6D0B'
@@ -107,7 +109,7 @@ class ExperimentUtilsTests(TestCase):
         expected_price = u'$199.23'
         self.assertEqual(expected_price, price)
         self.assertEqual(1, len(skus))
-        self.assertTrue(self.entitlement_a_sku in skus)
+        self.assertIn(self.entitlement_a_sku, skus)
 
     def test_price_and_sku_from_multiple_courses(self):
         entitlements = [self.entitlement_a]
@@ -120,5 +122,5 @@ class ExperimentUtilsTests(TestCase):
         expected_price = u'$285.23'
         self.assertEqual(expected_price, price)
         self.assertEqual(2, len(skus))
-        self.assertTrue(self.run_a_sku in skus)
-        self.assertTrue(self.entitlement_a_sku in skus)
+        self.assertIn(self.run_a_sku, skus)
+        self.assertIn(self.entitlement_a_sku, skus)

@@ -252,7 +252,8 @@ def get_experiment_user_metadata_context(course, user):
 
                     if PROGRAM_PRICE_FLAG.is_enabled():
                         unenrolled_courses = get_unenrolled_courses_in_program(courses, user_enrollments)
-                        complete_enrollment = (len(unenrolled_courses) == 0)
+                        if not unenrolled_courses:
+                            complete_enrollment = True
                         remaining_courses_price, remaining_skus = get_program_price_and_skus(unenrolled_courses)
                         remaining_courses_purchase_url = get_program_purchase_url(remaining_skus)
 
