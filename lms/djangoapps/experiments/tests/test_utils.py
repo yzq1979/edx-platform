@@ -3,7 +3,7 @@ Tests of experiment functionality
 """
 from decimal import Decimal
 from unittest import TestCase
-from lms.djangoapps.experiments.utils import get_course_price_and_sku, get_program_price_and_skus, \
+from lms.djangoapps.experiments.utils import get_course_entitlement_price_and_sku, get_program_price_and_skus, \
     get_program_purchase_url, get_unenrolled_courses_in_program, is_enrolled_in_course_run
 from opaque_keys.edx.keys import CourseKey
 
@@ -79,7 +79,7 @@ class ExperimentUtilsTests(TestCase):
     def test_price_and_sku_from_empty_course(self):
         course = {}
 
-        price, sku = get_course_price_and_sku(course)
+        price, sku = get_course_entitlement_price_and_sku(course)
         self.assertEqual(None, price)
         self.assertEqual(None, sku)
 
@@ -87,7 +87,7 @@ class ExperimentUtilsTests(TestCase):
         entitlements = [self.entitlement_a]
         course = {'key': 'UQx+ENGY1x', 'entitlements': entitlements}
 
-        price, sku = get_course_price_and_sku(course)
+        price, sku = get_course_entitlement_price_and_sku(course)
         self.assertEqual(self.entitlement_a_price, price)
         self.assertEqual(self.entitlement_a_sku, sku)
 
@@ -95,7 +95,7 @@ class ExperimentUtilsTests(TestCase):
         course_runs = [self.course_run_a]
         course = {'key': 'UQx+ENGY1x', 'course_runs': course_runs}
 
-        price, sku = get_course_price_and_sku(course)
+        price, sku = get_course_entitlement_price_and_sku(course)
         expected_price = Decimal(self.run_a_price)
         self.assertEqual(expected_price, price)
         self.assertEqual(self.run_a_sku, sku)

@@ -117,27 +117,28 @@ def get_program_price_and_skus(courses):
     """
     Get the total program price and purchase skus from these courses in the program
     """
-    program_price = Decimal('0')
+    program_price = 0
     skus = []
 
     for course in courses:
-        course_price, course_sku = get_course_price_and_sku(course)
+        course_price, course_sku = get_course_entitlement_price_and_sku(course)
         if course_price is not None and course_sku is not None:
             program_price = Decimal(program_price) + Decimal(course_price)
             skus.append(course_sku)
 
-    if program_price <= Decimal('0'):
+    if program_price <= 0:
         program_price = None
         skus = None
     else:
-        program_price = unicode(format_course_price(program_price))
+        program_price = format_course_price(program_price)
+        program_price = unicode(program_price)
 
     return program_price, skus
 
 
-def get_course_price_and_sku(course):
+def get_course_entitlement_price_and_sku(course):
     """
-    Get the price and sku from this course.
+    Get the entitlement price and sku from this course.
     Try to get them from the first non-expired, verified entitlement that has a price and a sku. If that doesn't work,
     fall back to the first non-expired, verified course run that has a price and a sku.
     """
@@ -242,20 +243,24 @@ def get_experiment_user_metadata_context(course, user):
                 # A course can be in multiple programs, but we're just grabbing the first one
                 program = programs[0]
                 complete_enrollment = False
+                has_courses_left_to_purchase = False
                 total_courses = None
                 courses = program.get('courses')
-                remaining_courses_price = None
-                remaining_courses_purchase_url = None
+                courses_left_to_purchase_price = None
+                courses_left_to_purchase_url = None
                 if courses is not None:
                     total_courses = len(courses)
                     complete_enrollment = is_enrolled_in_all_courses_in_program(courses, user_enrollments)
 
                     if PROGRAM_PRICE_FLAG.is_enabled():
-                        unenrolled_courses = get_unenrolled_courses_in_program(courses, user_enrollments)
-                        if not unenrolled_courses:
-                            complete_enrollment = True
-                        remaining_courses_price, remaining_skus = get_program_price_and_skus(unenrolled_courses)
-                        remaining_courses_purchase_url = get_program_purchase_url(remaining_skus)
+                        non_audit_enrollments = [enrollment for enrollment in user_enrollments if enrollment not in
+                                                 audit_enrollments]
+                        courses_left_to_purchase = get_unenrolled_courses_in_program(courses, non_audit_enrollments)
+                        if courses_left_to_purchase:
+                            has_courses_left_to_purchase = True
+                        courses_left_to_purchase_price, courses_left_to_purchase_skus = get_program_price_and_skus(
+                            courses_left_to_purchase)
+                        courses_left_to_purchase_url = get_program_purchase_url(courses_left_to_purchase_skus)
 
                 program_key = {
                     'uuid': program.get('uuid'),
@@ -263,8 +268,9 @@ def get_experiment_user_metadata_context(course, user):
                     'marketing_url': program.get('marketing_url'),
                     'total_courses': total_courses,
                     'complete_enrollment': complete_enrollment,
-                    'remaining_courses_price': remaining_courses_price,
-                    'remaining_courses_purchase_url': remaining_courses_purchase_url,
+                    'has_courses_left_to_purchase': has_courses_left_to_purchase,
+                    'courses_left_to_purchase_price': courses_left_to_purchase_price,
+                    'courses_left_to_purchase_url': courses_left_to_purchase_url,
                 }
         # TODO: clean up as part of REVEM-199 (END)
         enrollment = CourseEnrollment.objects.select_related(
